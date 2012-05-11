@@ -15,5 +15,5 @@ expand [m|a*(b+c)|] = expand (a*b) + expand (a*c)
 expand [m|  a*b  |] = expand a * expand b
 expand       a      = a
 
---test2 = prodS [var "a", var "b", sumS [var "a", var "c"]] :: VarPoly Int
-
+test [m|a+a|] = a
+test [m|2*a|] = a

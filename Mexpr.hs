@@ -1,5 +1,5 @@
 
-{-# LANGUAGE RankNTypes, ViewPatterns  #-}
+{-# LANGUAGE RankNTypes, ViewPatterns, FlexibleInstances, MultiParamTypeClasses  #-}
 
 module Mexpr (MExpr(..), module BasicAlgs) where
 
@@ -8,10 +8,9 @@ import Data.List as List
 import BasicAlgs
 
 data MExpr a =  C a | V String | Sum [MExpr a] | Prod [MExpr a]
-	deriving Show
 
---instance (Show a) => Show (MExpr a) where
---	show = show2 0 where
+instance (Show a) => Show (MExpr a) where
+	show = prettyShow
 
 prettyShow :: (Show a) => MExpr a -> String 
 prettyShow a = show2 0 a where
@@ -23,9 +22,13 @@ prettyShow a = show2 0 a where
 		show2 1 (V s) = s
 		show2 1 a = "(" ++ show2 0 a ++ ")"
 
-{-instance forall a. (Num a) => Symbolic a (MExpr a) where
-	const = C
-	var   = V-}
+instance Symbolic Int (MExpr Int) where
+	constS = C
+	constV (C n) = Just n
+	constV _ = Nothing
+	varS   = V
+	varV (V s) = Just s
+	varV _ = Nothing
 
 instance (Num a) => SymbolicSum (MExpr a) where
 	sumS = Sum

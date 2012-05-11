@@ -38,12 +38,12 @@ mexpr n@5 =
 			many space
 			a <- many1 digit
 			many space
-			return $ const (read a :: Integer) 
+			return $ constS (read a :: Integer) 
 	) <|> (try $ do 
 			many space
 			a <- many1 letter
 			many space
-			return $ var a
+			return $ varS a
 	) <|> (try $ do
 		char '('
 		many space
