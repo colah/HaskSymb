@@ -23,20 +23,20 @@ prettyShow a = show2 0 a where
 		show2 1 a = "(" ++ show2 0 a ++ ")"
 
 instance Symbolic Int (MExpr Int) where
-	constS = C
-	constV (C n) = Just n
-	constV _ = Nothing
-	varS   = V
-	varV (V s) = Just s
-	varV _ = Nothing
+	constC = C
+	constD (C n) = Just n
+	constD _ = Nothing
+	varC   = V
+	varD (V s) = Just s
+	varD _ = Nothing
 
 instance (Num a) => SymbolicSum (MExpr a) where
-	sumS = Sum
-	sumV (Sum l) = Just l
-	sumV _ = Nothing
+	sumC = Sum
+	sumD (Sum l) = Just l
+	sumD _ = Nothing
 
 instance (Num a) => SymbolicProd (MExpr a) where
-	prodS = Prod
-	prodV (Prod l) = Just l
-	prodV _ = Nothing
+	prodC = Prod
+	prodD (Prod l) = Just l
+	prodD _ = Nothing
 

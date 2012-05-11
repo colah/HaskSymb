@@ -34,22 +34,22 @@ data BoundVar = Wild | BoundVar String
 	deriving (Show)
 
 instance Symbolic Integer PrePat where
-	varS s = Free s
-	varV _ = Nothing
-	constS m = Bound (e "matchesConst" $$ (e "fromIntegral" $$ n m)) [Wild]
-	constV _ = Nothing
+	varC s = Free s
+	varD _ = Nothing
+	constC m = Bound (e "matchesConst" $$ (e "fromIntegral" $$ n m)) [Wild]
+	constD _ = Nothing
 
 instance SymbolicSum PrePat where
-	sumV _ = Nothing
-	sumS l = 
+	sumD _ = Nothing
+	sumC l = 
 		let
 			frees = map (\(Free a) -> a) $ filter isFree l
 			(bindings, bounds) = unzip $ map (\(Bound a b) -> (a,b)) $ filter (not.isFree) l
 			varlist = frees ++ (map (\(BoundVar name) -> name) $ concat bounds)
 			satisfySum' = 
 				e "satisfy" 
-				$$ e "sumV" 
-				$$ e "sumS" 
+				$$ e "sumD" 
+				$$ e "sumC" 
 				$$ TupE [e "fromIntegral" $$ n (length frees), e "fromIntegral" $$  n (length bounds)] 
 				$$ ListE bindings
 			--satisfyEq' :: [Int] -> Maybe a -> Exp
@@ -65,8 +65,8 @@ instance SymbolicSum PrePat where
 		in Bound (eqreq satisfySum')  (concat bounds ++ (map BoundVar (List.nub frees)))
 
 instance SymbolicProd PrePat where
-	prodV _ = Nothing
-	prodS l = 
+	prodD _ = Nothing
+	prodC l = 
 		let
 			frees = map (\(Free a) -> a) $ filter isFree l
 			(bindings, bounds) = unzip $ map (\(Bound a b) -> (a,b)) $ filter (not.isFree) l
@@ -75,8 +75,8 @@ instance SymbolicProd PrePat where
 			($$) = AppE
 			satisfySum' = 
 				e "satisfy" 
-				$$ e "prodV" 
-				$$ e "prodS" 
+				$$ e "prodD" 
+				$$ e "prodC" 
 				$$ TupE [e "fromIntegral" $$ n (length frees), e "fromIntegral" $$  n (length bounds)] 
 				$$ ListE bindings
 		in Bound satisfySum'  (concat bounds ++ (map BoundVar frees))

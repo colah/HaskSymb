@@ -8,7 +8,7 @@ import Definitions
 
 -- thinking ahead
 -- [m|a*(b+c)] -- one free var, one not
--- satisfy prodV (1,1) [satisfy sumV (2,0) []]  -> Just [a,b,c]
+-- satisfy prodD (1,1) [satisfy sumD (2,0) []]  -> Just [a,b,c]
 
 permutationsOfLenAndOthers n l = 
 	let
@@ -49,7 +49,7 @@ coaleceView boundRules = fmap (concat) . sequence . zipWith ($) boundRules
 satisfy a b c = satisfy2 a b c . coaleceView
 
 matchesConst :: (Symbolic a b, Eq a) =>  a -> b -> Maybe [b]
-matchesConst n  a@(constV -> Just m) | m == n = Just [a]
+matchesConst n  a@(constD -> Just m) | m == n = Just [a]
 matchesConst _        _               = Nothing
 
 --requireEq :: [Int] -> Maybe [a] -> Maybe [a]

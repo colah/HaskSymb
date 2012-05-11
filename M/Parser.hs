@@ -9,12 +9,14 @@ import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Expr
 import Language.Haskell.TH
 
+-- The obvious generalization of sepBy and sepBy1
 sepBy2 seg sep = do
 	x <- seg
 	sep
 	xs <- sepBy1 seg sep
 	return (x:xs)
 
+-- essentially from the aformentione quasiquoter tutorial
 parsePat :: Monad m => (String, Int, Int) -> String -> m Pat
 parsePat (file, line, col) s =
     case runParser p () "" s of
@@ -33,17 +35,19 @@ parsePat (file, line, col) s =
             eof
             return e
 
+-- The 'n' argument is the fixity level we are at
+
 mexpr n@5 = 
 	(try $ do
 			many space
 			a <- many1 digit
 			many space
-			return $ constS (read a :: Integer) 
+			return $ constC (read a :: Integer) 
 	) <|> (try $ do 
 			many space
 			a <- many1 letter
 			many space
-			return $ varS a
+			return $ varC a
 	) <|> (try $ do
 		char '('
 		many space
@@ -54,17 +58,16 @@ mexpr n@5 =
 		return a
 	)
 
--- Should use something like sepBy2 ... but it doesn't exist!!!
 mexpr n@4 =
 	( try $ do
 		a <- sepBy2 (mexpr (n+1)) (many space >> char '*' >> many space)
-		return $ prodS a
+		return $ prodC a
 	) <|> (mexpr (n+1))
 
 mexpr n@3 =
 	( try $ do
 		a <- sepBy2 (mexpr (n+1)) (many space >> char '+' >> many space)
-		return $ sumS a
+		return $ sumC a
 	) <|> (mexpr (n+1))
 
 mexpr 0 = do
