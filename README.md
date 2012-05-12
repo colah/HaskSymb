@@ -1,7 +1,7 @@
 HaskSymb: An Experiment in Haskell Symbolic Algebra
 ===================================================
 
-HaskSymb is a quickly hacked together proof of concept that I may expand at some point. It is not a serious project, isn't useful for anything, and has fairly ugly code. That said, it has some cool features.
+HaskSymb is a quickly hacked together proof of concept that I may expand at some point. That said, it has some cool features.
 
 The biggest one is that it provides mathematical pattern matching via quasiquoters. So one can write code like this:
 
@@ -14,7 +14,7 @@ expand       a      = a
 
 The patterns match up to trivial mathematical equivalency. For example, because multiplication is commutative, `[m|a*(b+c)|]` matches `(x+1)*y` in addition to `2*(x+1)`. On the other hand, it doesn't attempt to do deeper analysis, like expanding expressions. It does support using the same variable multiple times (eg. `[m|a+a|]` which will match `x+x` but not `x+1`) and constants (eg. `[m|2*a|]`).
 
-(In fact, at the time of writing that is actual code in *BasicAlgs*)
+(In fact, at the time of writing that is actual code in **BasicAlg.hs**.)
 
 Example Use
 ------------
@@ -54,6 +54,17 @@ foo          _          = "input is not a sum"
 ```
 
 Our quasiquoter, `m`, will build smarter destructors based off of these. Then if someone implements `SymbolicSum`, etc, they can use our patterns!
+
+Fun Hacking!!
+--------------
+
+As mentioned earlier, HaskSymb is a quickly hacked together proof of concept. It is not a serious project, isn't useful for anything, and has fairly ugly code. At some point, it may become something else, but that isn't right now.
+
+So, I can't in good conscience recommend hacking on most of the code base. It was my first time writing Template Haskell and that shines through with the sort of code that will making you want to bang your head against the wall repeatedly.
+
+That said, **BasicAlgs.hs** is really cool and may be worth hacking on. It's just simple procedures to apply to symbolic expressions, made really pleasant by the `m` quasiquoter. Check it out! Right now, there's just `expand` and `collectTerms` -- I don't really know what the building blocks of procedural algebra should be...
+
+I'd be thrilled to accept pull requests here.
 
 Where I'm Kind Of Stuck
 ------------------------
