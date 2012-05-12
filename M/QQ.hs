@@ -1,7 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses, ViewPatterns, TupleSections #-}
 
 
-module M.QQ(m, satisfy, matchesConst, requireEq) where
+module M.QQ(m, satisfy, matchesConst, matchesAnyConst, requireEq) where
 
 -- Based on http://www.haskell.org/haskellwiki/Quasiquotation
 

@@ -1,6 +1,6 @@
 {-# LANGUAGE ViewPatterns #-}
 
-module M.View(satisfy, satisfy2, requireEq, coaleceView, matchesConst) where
+module M.View(satisfy, satisfy2, requireEq, coaleceView, matchesConst, matchesAnyConst) where
 
 import Data.List as List
 import Control.Monad

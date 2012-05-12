@@ -11,7 +11,7 @@ import M.View
 data MExpr a =  C a | V String | Sum [MExpr a] | Prod [MExpr a]
 
 collectCopies :: (Eq a) => [a] -> [(a, [Int])]
-collectCopies vars = map (\var -> (var, poslist 0 var vars )) vars
+collectCopies vars = map (\var -> (var, poslist 0 var vars )) $ List.nub vars
 	where
 		poslist _     _     []     = []
 		poslist shift match (x:xs) =  
@@ -28,14 +28,22 @@ instance (Show a, Eq a, Num a) => Show (MExpr a) where
 		show2 n@0 (Sum vals) = concat $ List.intersperse "+" $ map (show2 n) vals
 		show2 0 a = show2 1 a
 		show2 n@1 (Prod vals) = 
-			concat $ List.intersperse "*" $ map (\(a,b) -> showWithPow (a, length b)) $ collectCopies vals
+			concat $ List.intersperse "*" $ map (showWithPow.lengthifySecond) $ collectCopies vals2
 				where
+					isConst (C a) = True
+					isConst _     = False
+					consts = map (\(C n) -> n) $ filter isConst vals
+					nonconsts = filter (not.isConst) vals
+					vals2 = if null consts || product consts == 1
+						then nonconsts
+						else (C $ product consts):nonconsts
+					lengthifySecond (a,b) = (a, length b)
 					showWithPow (a, 1) = show2 n a
 					showWithPow (a, 2) = show2 n a ++ "²"
 					showWithPow (a, 3) = show2 n a ++ "³"
 					showWithPow (a, 4) = show2 n a ++ "⁴"
 					showWithPow (a, 5) = show2 n a ++ "⁵"
-					showWithPow (a, m) = show2 n a ++ show m
+					showWithPow (a, m) = show2 n a ++ "^" ++ show m
 		show2 1 (C a) = show a
 		show2 1 (V s) = s
 		show2 1 a = "(" ++ show2 0 a ++ ")"

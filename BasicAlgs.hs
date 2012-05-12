@@ -15,14 +15,12 @@ expand [m|a*(b+c)|] = expand (a*b) + expand (a*c)
 expand [m|  a*b  |] = expand a * expand b
 expand       a      = a
 
-collectTerms [m| aK*x + bK*x |] = (aK+bK)*x
-collectTerms [m|    x + bK*x |] = (constC 1+bK)*x
-collectTerms [m| aK*x +    x |] = (aK+ constC 1)*x
-collectTerms [m|    x +    x |] = (constC 2)*x
-collectTerms [m| aK*x + bK*x + c |] = collectTerms $ (aK+bK)*x         + c
-collectTerms [m|    x + bK*x + c |] = collectTerms $ (constC 1+bK)*x   + c
-collectTerms [m| aK*x +    x + c |] = collectTerms $ (aK+ constC 1)*x  + c
+collectTerms [m| aC*x + bC*x + c |] = collectTerms $ (aC+bC)*x         + c
+collectTerms [m| aC*x +    x + c |] = collectTerms $ (aC+ constC 1)*x  + c
 collectTerms [m|    x +    x + c |] = collectTerms $ (constC 2)*x      + c
-collectTerms          a        =  a
+collectTerms [m| aC*x + bC*x     |] = collectTerms $ (aC+bC)*x
+collectTerms [m| aC*x +    x     |] = collectTerms $ (aC+ constC 1)*x
+collectTerms [m|    x +    x     |] = collectTerms $ (constC 2)*x
+collectTerms          a             =  a
 
 --exapndAndCollect = collectTerms . expand

@@ -16,6 +16,23 @@ The patterns match up to trivial mathematical equivalency. For example, because 
 
 (In fact, at the time of writing that is actual code in *BasicAlgs*)
 
+Example Use
+------------
+
+A short ghci session with HaskSymb, using the `MExpr` symbolic type
+
+```haskell
+Prelude> :l Mexpr
+...
+*Mexpr> let a = V "a"
+*Mexpr> (1+a)^2
+(1+a)²
+*Mexpr> expand $ (1+a)^2
+1+a+a+a²
+*Mexpr> collectTerms $ expand $ (1+a)^2
+1+2*a+a²
+```
+
 How does it work?
 ------------------
 
