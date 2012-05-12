@@ -34,7 +34,9 @@ data BoundVar = Wild | BoundVar String
 	deriving (Show)
 
 instance Symbolic Integer PrePat where
-	varC s = Free s
+	varC s = if tail s == "C" 
+			then Bound (e "matchesAnyConst") [BoundVar s]
+			else Free s
 	varD _ = Nothing
 	constC m = Bound (e "matchesConst" $$ (e "fromIntegral" $$ n m)) [Wild]
 	constD _ = Nothing
@@ -45,7 +47,7 @@ instance SymbolicSum PrePat where
 		let
 			frees = map (\(Free a) -> a) $ filter isFree l
 			(bindings, bounds) = unzip $ map (\(Bound a b) -> (a,b)) $ filter (not.isFree) l
-			varlist = frees ++ (map (\(BoundVar name) -> name) $ concat bounds)
+			varlist = (map (\(BoundVar name) -> name) $ concat bounds) ++ frees
 			satisfySum' = 
 				e "satisfy" 
 				$$ e "sumD" 
@@ -62,7 +64,7 @@ instance SymbolicSum PrePat where
 			eqreq = if null multvars
 				then id
 				else foldl1 (.) $ map (\(var, poslist) -> satisfyEq' poslist ) multvars
-		in Bound (eqreq satisfySum')  (concat bounds ++ (map BoundVar (List.nub frees)))
+		in Bound (eqreq satisfySum')  (map BoundVar $ List.nub varlist)
 
 instance SymbolicProd PrePat where
 	prodD _ = Nothing
@@ -70,16 +72,25 @@ instance SymbolicProd PrePat where
 		let
 			frees = map (\(Free a) -> a) $ filter isFree l
 			(bindings, bounds) = unzip $ map (\(Bound a b) -> (a,b)) $ filter (not.isFree) l
-			e name = VarE (mkName name)
-			n num =  LitE (IntegerL (fromIntegral num))
-			($$) = AppE
-			satisfySum' = 
+			varlist = (map (\(BoundVar name) -> name) $ concat bounds)  ++ frees
+			satisfyProd' = 
 				e "satisfy" 
 				$$ e "prodD" 
 				$$ e "prodC" 
 				$$ TupE [e "fromIntegral" $$ n (length frees), e "fromIntegral" $$  n (length bounds)] 
 				$$ ListE bindings
-		in Bound satisfySum'  (concat bounds ++ (map BoundVar frees))
+			--satisfyEq' :: [Int] -> Maybe a -> Exp
+			satisfyEq' posList a =
+				e "requireEq"
+				$$ ListE (map (\pos -> e "fromIntegral" $$ n pos) posList)
+				$$ a
+			multvars :: [(String, [Int])]
+			multvars = filter (\(a,b) -> length b >= 2) $ collectStringCopies varlist
+			eqreq = if null multvars
+				then id
+				else foldl1 (.) $ map (\(var, poslist) -> satisfyEq' poslist ) multvars
+		in Bound (eqreq satisfyProd')  (map BoundVar $ List.nub varlist)
+
 
 
 makePat :: PrePat -> Pat

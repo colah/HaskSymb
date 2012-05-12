@@ -1,28 +1,59 @@
 
 {-# LANGUAGE RankNTypes, ViewPatterns, FlexibleInstances, MultiParamTypeClasses  #-}
 
-module Mexpr (MExpr(..), module BasicAlgs) where
+module Mexpr (MExpr(..), module BasicAlgs, module M.View) where
 
 import Definitions
 import Data.List as List
-import BasicAlgs
+import BasicAlgs hiding ((+), (*))
+import M.View
 
 data MExpr a =  C a | V String | Sum [MExpr a] | Prod [MExpr a]
 
-instance (Show a) => Show (MExpr a) where
-	show = prettyShow
+collectCopies :: (Eq a) => [a] -> [(a, [Int])]
+collectCopies vars = map (\var -> (var, poslist 0 var vars )) vars
+	where
+		poslist _     _     []     = []
+		poslist shift match (x:xs) =  
+			if x == match 
+				then shift : poslist (shift+1) match xs
+				else  poslist (shift+1) match xs
 
-prettyShow :: (Show a) => MExpr a -> String 
-prettyShow a = show2 0 a where
-		show2 :: (Show a) => Int -> MExpr a -> String
+
+instance (Show a, Eq a, Num a) => Show (MExpr a) where
+	show = show2 0 where
+		show2 :: (Show a, Eq a, Num a) => Int -> MExpr a -> String
+		show2 _ (Sum []) = "EMPTYSUM"
+		show2 _ (Prod []) = "EMPTYPROD"
 		show2 n@0 (Sum vals) = concat $ List.intersperse "+" $ map (show2 n) vals
 		show2 0 a = show2 1 a
-		show2 n@1 (Prod vals) = concat $ List.intersperse "*" $ map (show2 n) vals
+		show2 n@1 (Prod vals) = 
+			concat $ List.intersperse "*" $ map (\(a,b) -> showWithPow (a, length b)) $ collectCopies vals
+				where
+					showWithPow (a, 1) = show2 n a
+					showWithPow (a, 2) = show2 n a ++ "²"
+					showWithPow (a, 3) = show2 n a ++ "³"
+					showWithPow (a, 4) = show2 n a ++ "⁴"
+					showWithPow (a, 5) = show2 n a ++ "⁵"
+					showWithPow (a, m) = show2 n a ++ show m
 		show2 1 (C a) = show a
 		show2 1 (V s) = s
 		show2 1 a = "(" ++ show2 0 a ++ ")"
 
-instance Symbolic Int (MExpr Int) where
+instance Num a => Eq (MExpr a) where
+	a == b = a === b
+
+instance Num a => Num (MExpr a) where
+	fromInteger n = C $ fromIntegral n
+	a + b = sumC' [a,b]
+	a * b = prodC' [a,b]
+	negate = ((-1)*)
+	abs _ = error "absolute value not supported in MExpr"
+	signum _ = error "no signum provided in MExpr"
+	
+	
+
+instance (Num a) => Symbolic a (MExpr a) where
 	constC = C
 	constD (C n) = Just n
 	constD _ = Nothing

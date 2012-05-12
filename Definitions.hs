@@ -25,13 +25,22 @@ class SymbolicSum a where
 
 sumC' vals = 
 	let
+		sumC'' [x] = x
+		sumC'' xs = sumC xs
 		isSum (sumD -> Just _) = True
 		isSum _ = False
 		sums = filter isSum vals
 		nonsums = filter (not.isSum) vals
+		isConst (constD -> Just _) = True
+		isConst       _            = False
+		consts = map (\(constD -> Just a) -> a) $ filter isConst vals
 	in if null sums
-		then sumC nonsums
-		else sumC $ nonsums ++ concat (map (\(sumD -> Just a) -> a) sums)
+		then if null consts
+			then sumC'' vals
+			else sumC'' $ [constC (sum consts)] ++ filter (not.isConst) vals
+		else sumC' $ nonsums ++ concat (map (\(sumD -> Just a) -> a) sums)
+
+
 
 -- a can be multiplied
 class SymbolicProd a where
@@ -40,14 +49,39 @@ class SymbolicProd a where
 
 prodC' vals = 
 	let
+		prodC'' [x] = x
+		prodC'' xs = prodC xs
 		isProd (prodD -> Just _) = True
 		isProd _ = False
 		prods = filter isProd vals
 		nonprods = filter (not.isProd) vals
+		isConst (constD -> Just _) = True
+		isConst       _            = False
+		consts = map (\(constD -> Just a) -> a) $ filter isConst vals
 	in if null prods
-		then prodC nonprods
-		else prodC $ nonprods ++ concat (map (\(prodD -> Just a) -> a) prods)
+		then if null consts
+			then prodC'' vals
+			else prodC'' $ [constC (product consts)] ++ filter (not.isConst) vals
+		else prodC' $ nonprods ++ concat (map (\(prodD -> Just a) -> a) prods)
 
+{-cleanLCons :: ([a] -> a) -> (a -> Maybe [a]) -> ([b] -> a) -> (a -> b) -> (b -> Maybe a) -> a -> a
+cleanLCons      cons            dest           constCons     constC        constD  (dest -> Just vals) = 
+	let
+		--isCons :: a -> Bool
+		isCons (dest -> Just _) = True
+		isCons        _         = False
+		--isConst :: a -> Bool
+		isConst (constD -> Just _) = True
+		isConst       _            = False
+		--conses :: [a]
+		conses = filter isCons vals
+		--consts :: [b]
+		consts = map (\(constD -> Just a) -> a) $ filter isConst vals
+	in if null conses
+		then cons $ [constC (constCons consts)] ++ filter (not.isConst) vals
+		else cleanLCons cons dest constCons constC constD $ cons $
+			filter (not . isCons) vals ++ concat (map (\(dest -> Just a) -> a) conses)
+-}
 
 class SymbolicDiff a where
 	diff :: a -> a
