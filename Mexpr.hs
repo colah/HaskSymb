@@ -27,12 +27,13 @@ instance (Show a, Eq a, Num a) => Show (MExpr a) where
 		show2 :: (Show a, Eq a, Num a) => Int -> MExpr a -> String
 		show2 _ (Sum []) = "EMPTYSUM"
 		show2 _ (Prod []) = "EMPTYPROD"
-		show2 n@0 (Sum vals) = concat $ List.intersperse "+" $ map (show2 n) (List.sortBy (cmp) vals)
-			where 
-				(Prod a) `cmp` (Prod b) = length a `compare` length b
-				_ `cmp` (Prod _) = LT
-				(Prod _) `cmp`  _ = GT
-				_ `cmp` _ = EQ
+		show2 n@0 (Sum vals) = 
+			concat $ List.intersperse " + " $ map (show2 n) $ reverse $ List.sortBy cmp vals
+				where 
+					(Prod a) `cmp` (Prod b) = length a `compare` length b
+					_        `cmp` (Prod _) = LT
+					(Prod _) `cmp`   _      = GT
+					_        `cmp`   _      = EQ
 		show2 0 a = show2 1 a
 		show2 n@1 (Prod vals) = 
 			pre ++ (concat $ List.intersperse "*" $ map (showWithPow.lengthifySecond) $ collectCopies nonconsts)

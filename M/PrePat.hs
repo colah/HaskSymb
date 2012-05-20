@@ -26,12 +26,12 @@ instance (Symbolic Integer a, Data a, Eq a) => Symbolic Integer (SymbPat a) wher
 instance (SymbolicSum a, Data a, Eq a, Symbolic Integer a) => SymbolicSum (SymbPat a) where
 	sumD _ = Nothing
 	sumC pats = PreProcess (e "sumD",sumD) $ 
-		ListPat [Commutative, CompressExtra (e "sumC", sumC)] pats
+		ListPat [Commutative, CompressExtra (e "sumC", sumC),FillMissing (e "constC" $$ n 0, constC 0)] pats
 
 instance (SymbolicProd a, Data a, Eq a, Symbolic Integer a) => SymbolicProd (SymbPat a) where
 	prodD _ = Nothing
 	prodC pats = PreProcess (e "prodD", prodD) $ 
-		ListPat [Commutative, CompressExtra (e "prodC", prodC)] pats
+		ListPat [Commutative, CompressExtra (e "prodC", prodC),FillMissing (e "constC" $$ n 1, constC 1)] pats
 
 makePat :: SymbPat a -> Q Pat
 makePat = finishPat
