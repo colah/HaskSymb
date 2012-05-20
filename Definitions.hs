@@ -96,14 +96,15 @@ class SymbolicInt a where
 listEq (==) (a:as) b =
 	let
 		amatches = filter (==a) b
-		nonamatches = filter (not .(==a)) as
+		nonamatches = filter (not .(==a)) b
 	in
 		if null amatches
 		then False
 		else listEq (==) as (tail amatches ++ nonamatches)
 listEq _ [] [] = True
+listEq _ _  _  = False
 
-(===) :: (SymbolicSum a, Symbolic b a, Eq b, SymbolicProd a, Show a) => a -> a -> Bool
+(===) :: (SymbolicSum a, Symbolic b a, Eq b, SymbolicProd a) => a -> a -> Bool
 (constD -> Just a) === (constD -> Just b) = a == b
 (varD   -> Just a) === (varD   -> Just b) = a == b
 (sumD  -> Just as) === (sumD  -> Just bs) = listEq (===) as bs
@@ -113,3 +114,5 @@ listEq _ [] [] = True
 (prodD-> Just [a]) === (              b ) = a === b
 (              a ) === (prodD-> Just [b]) = a === b
 a                  ===                b   = False
+
+--instance Eq

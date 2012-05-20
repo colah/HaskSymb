@@ -1,12 +1,12 @@
 {-# LANGUAGE MultiParamTypeClasses, ViewPatterns, TupleSections #-}
 
 
-module M.QQ(m, satisfy, matchesConst, matchesAnyConst, requireEq) where
+module M.QQ(m, isConst) where
 
 -- Based on http://www.haskell.org/haskellwiki/Quasiquotation
 
 import Definitions
-import M.View
+import M.PrePat (isConst)
 import M.Parser
 import Language.Haskell.TH as TH
 import Language.Haskell.TH.Quote

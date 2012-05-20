@@ -1,12 +1,14 @@
 
-{-# LANGUAGE RankNTypes, ViewPatterns, FlexibleInstances, MultiParamTypeClasses  #-}
+{-# LANGUAGE RankNTypes, ViewPatterns, FlexibleInstances, MultiParamTypeClasses #-}
 
-module Mexpr (MExpr(..), module BasicAlgs, module M.View) where
+module Mexpr (MExpr(..), module BasicAlgs, module Data.Pattern, m, isConst) where
 
 import Definitions
+import Data.Pattern
 import Data.List as List
 import BasicAlgs hiding ((+), (*))
-import M.View
+import M.PrePat
+import M.QQ
 
 data MExpr a =  C a | V String | Sum [MExpr a] | Prod [MExpr a]
 
@@ -25,33 +27,42 @@ instance (Show a, Eq a, Num a) => Show (MExpr a) where
 		show2 :: (Show a, Eq a, Num a) => Int -> MExpr a -> String
 		show2 _ (Sum []) = "EMPTYSUM"
 		show2 _ (Prod []) = "EMPTYPROD"
-		show2 n@0 (Sum vals) = concat $ List.intersperse "+" $ map (show2 n) vals
+		show2 n@0 (Sum vals) = concat $ List.intersperse "+" $ map (show2 n) (List.sortBy (cmp) vals)
+			where 
+				(Prod a) `cmp` (Prod b) = length a `compare` length b
+				_ `cmp` (Prod _) = LT
+				(Prod _) `cmp`  _ = GT
+				_ `cmp` _ = EQ
 		show2 0 a = show2 1 a
 		show2 n@1 (Prod vals) = 
-			concat $ List.intersperse "*" $ map (showWithPow.lengthifySecond) $ collectCopies vals2
+			pre ++ (concat $ List.intersperse "*" $ map (showWithPow.lengthifySecond) $ collectCopies nonconsts)
 				where
 					isConst (C a) = True
 					isConst _     = False
 					consts = map (\(C n) -> n) $ filter isConst vals
 					nonconsts = filter (not.isConst) vals
-					vals2 = if null consts || product consts == 1
-						then nonconsts
-						else (C $ product consts):nonconsts
+					pre = if null consts || product consts == 1
+						then ""
+						else show $ product consts
 					lengthifySecond (a,b) = (a, length b)
 					showWithPow (a, 1) = show2 n a
 					showWithPow (a, 2) = show2 n a ++ "²"
 					showWithPow (a, 3) = show2 n a ++ "³"
 					showWithPow (a, 4) = show2 n a ++ "⁴"
 					showWithPow (a, 5) = show2 n a ++ "⁵"
+					showWithPow (a, 6) = show2 n a ++ "⁶"
+					showWithPow (a, 7) = show2 n a ++ "⁷"
+					showWithPow (a, 8) = show2 n a ++ "⁸"
+					showWithPow (a, 9) = show2 n a ++ "⁹"
 					showWithPow (a, m) = show2 n a ++ "^" ++ show m
 		show2 1 (C a) = show a
 		show2 1 (V s) = s
 		show2 1 a = "(" ++ show2 0 a ++ ")"
 
-instance Num a => Eq (MExpr a) where
+instance (Num a, Eq a) => Eq (MExpr a) where
 	a == b = a === b
 
-instance Num a => Num (MExpr a) where
+instance (Num a, Eq a) => Num (MExpr a) where
 	fromInteger n = C $ fromIntegral n
 	a + b = sumC' [a,b]
 	a * b = prodC' [a,b]
@@ -61,7 +72,7 @@ instance Num a => Num (MExpr a) where
 	
 	
 
-instance (Num a) => Symbolic a (MExpr a) where
+instance (Num a, Eq a) => Symbolic a (MExpr a) where
 	constC = C
 	constD (C n) = Just n
 	constD _ = Nothing

@@ -1,13 +1,16 @@
-{-# LANGUAGE MultiParamTypeClasses, ViewPatterns, TupleSections #-}
+{-# LANGUAGE MultiParamTypeClasses, ViewPatterns, TupleSections, FlexibleContexts, ScopedTypeVariables, Rank2Types, NoMonomorphismRestriction, DeriveDataTypeable #-}
 
-module M.Parser(mexpr, parsePat) where
+module M.Parser (parsePat) {-(mexpr, parsePat)-} where
 
 import Prelude hiding (const)
 import Definitions
+import Data.Data
 import M.PrePat
-import Text.ParserCombinators.Parsec
+import Text.Parsec
+--import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Expr
 import Language.Haskell.TH
+import Unsafe.Coerce
 
 -- The obvious generalization of sepBy and sepBy1
 sepBy2 seg sep = do
@@ -16,12 +19,15 @@ sepBy2 seg sep = do
 	xs <- sepBy1 seg sep
 	return (x:xs)
 
+
+
 -- essentially from the aformentione quasiquoter tutorial
-parsePat :: Monad m => (String, Int, Int) -> String -> m Pat
+
+parsePat :: (String, Int, Int) -> String -> PatQ
 parsePat (file, line, col) s =
     case runParser p () "" s of
       Left err  -> fail $ show err
-      Right e   -> return (makePat e)
+      Right e   -> e
   where
     p = do  pos <- getPosition
             setPosition $
@@ -30,12 +36,40 @@ parsePat (file, line, col) s =
               (flip setSourceColumn) col $
               pos
             many space;
-            e <- mexpr 0;
+            e  <- mexpr';
 			many space;
             eof
             return e
 
+
+
 -- The 'n' argument is the fixity level we are at
+
+data Proxy = Proxy
+	deriving (Data, Typeable, Eq)
+
+instance Symbolic Integer Proxy where
+	constD _ = Nothing
+	varD _ = Nothing
+	constC _ = Proxy
+	varC _ = Proxy
+
+instance SymbolicSum Proxy where
+	sumD _ = Nothing
+	sumC _ = Proxy
+
+instance SymbolicProd Proxy where
+	prodD _ = Nothing
+	prodC _ = Proxy
+
+mexpr' :: Parsec [Char] st (Q Pat)
+mexpr' = do
+	a :: SymbPat Proxy <- mexpr 0
+	return (makePat a)
+
+
+mexpr :: (Symbolic Integer a, SymbolicSum a, SymbolicProd a, Data a, Eq a) =>
+			Int -> Parsec [Char] st (SymbPat a)
 
 mexpr n@5 = 
 	(try $ do
