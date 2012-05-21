@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, ViewPatterns, TupleSections, Rank2Types, FlexibleContexts, FlexibleInstances, GADTs, NoMonomorphismRestriction, TemplateHaskell #-}
+{-# LANGUAGE MultiParamTypeClasses, ViewPatterns, TupleSections, Rank2Types, FlexibleContexts, FlexibleInstances, GADTs, NoMonomorphismRestriction, TemplateHaskell, TypeSynonymInstances #-}
 
 module M.PrePat {- (PrePat(..), BoundVar(..), makePat) -} where
 
@@ -32,6 +32,10 @@ instance (SymbolicProd a, Data a, Eq a, Symbolic Integer a) => SymbolicProd (Sym
 	prodD _ = Nothing
 	prodC pats = PreProcess (e "prodD", prodD) $ 
 		ListPat [Commutative, CompressExtra (e "prodC", prodC),FillMissing (e "constC" $$ n 1, constC 1)] pats
+
+instance (SymbolicDiff a, Data a, Eq a, Symbolic Integer a) => SymbolicDiff (SymbPat a) where
+	diffD _ = Nothing
+	diffC pat = PreProcess (e "diffD", diffD) pat
 
 makePat :: SymbPat a -> Q Pat
 makePat = finishPat

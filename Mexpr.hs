@@ -1,16 +1,20 @@
 
 {-# LANGUAGE RankNTypes, ViewPatterns, FlexibleInstances, MultiParamTypeClasses #-}
 
-module Mexpr (MExpr(..), module BasicAlgs, module Data.Pattern, m, isConst) where
+module Mexpr (MExpr(..), module BasicAlgs, module Data.Pattern, m, isConst, collectCopies) where
 
 import Definitions
 import Data.Pattern
 import Data.List as List
+import Data.Maybe as Maybe
 import BasicAlgs hiding ((+), (*))
 import M.PrePat
 import M.QQ
 
 data MExpr a =  C a | V String | Sum [MExpr a] | Prod [MExpr a]
+				| Cos (MExpr a) | Sin (MExpr a) | Tan (MExpr a)
+				| D (MExpr a)
+--	deriving Show
 
 collectCopies :: (Eq a) => [a] -> [(a, [Int])]
 collectCopies vars = map (\var -> (var, poslist 0 var vars )) $ List.nub vars
@@ -22,11 +26,18 @@ collectCopies vars = map (\var -> (var, poslist 0 var vars )) $ List.nub vars
 				else  poslist (shift+1) match xs
 
 
+
 instance (Show a, Eq a, Num a) => Show (MExpr a) where
 	show = show2 0 where
 		show2 :: (Show a, Eq a, Num a) => Int -> MExpr a -> String
 		show2 _ (Sum []) = "EMPTYSUM"
 		show2 _ (Prod []) = "EMPTYPROD"
+		show2 n (D val) = if n > 0 || (Maybe.isJust . sumD $ val)
+							then "d(" ++ show2 0 val ++ ")"
+							else "d" ++ show2 n val
+		show2 n (Sin val) = "sin(" ++ show2 n val ++ ")"
+		show2 n (Cos val) = "cos(" ++ show2 n val ++ ")"
+		show2 n (Tan val) = "tan(" ++ show2 n val ++ ")"
 		show2 n@0 (Sum vals) = 
 			concat $ List.intersperse " + " $ map (show2 n) $ reverse $ List.sortBy cmp vals
 				where 
@@ -60,10 +71,12 @@ instance (Show a, Eq a, Num a) => Show (MExpr a) where
 		show2 1 (V s) = s
 		show2 1 a = "(" ++ show2 0 a ++ ")"
 
+
+
 instance (Num a, Eq a) => Eq (MExpr a) where
 	a == b = a === b
 
-instance (Num a, Eq a) => Num (MExpr a) where
+instance (Num a, Eq a, Show a) => Num (MExpr a) where
 	fromInteger n = C $ fromIntegral n
 	a + b = sumC' [a,b]
 	a * b = prodC' [a,b]
@@ -91,3 +104,7 @@ instance (Num a) => SymbolicProd (MExpr a) where
 	prodD (Prod l) = Just l
 	prodD _ = Nothing
 
+instance SymbolicDiff (MExpr a) where
+	diffC a = D a
+	diffD (D a) = Just a
+	diffD _     = Nothing

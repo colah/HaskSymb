@@ -24,13 +24,24 @@ A short ghci session with HaskSymb, using the `MExpr` symbolic type
 ```haskell
 Prelude> :l Mexpr
 ...
-*Mexpr> let a = V "a"
-*Mexpr> (1+a)^2
-(1+a)²
-*Mexpr> expand $ (1+a)^2
-1+a+a+a²
-*Mexpr> collectTerms $ expand $ (1+a)^2
-1+2*a+a²
+
+*Mexpr> -- Let's make some variables!
+*Mexpr> let (a,b)  = (V "a", V "b")
+
+*Mexpr> -- Basic Expression manipulation
+*Mexpr> (a+1)^3
+(a + 1)³
+*Mexpr> expand $ (a+1)^3
+a³ + a² + a² + a² + a + a + a + 1
+*Mexpr> collectTerms $ expand $ (a+1)^3
+a³ + 3a² + 3a + 1
+*Mexpr> collectTerms $ expand $ (a+b)^4
+6a²*b² + 4a³*b + 4a*b³ + b⁴ + a⁴
+
+*Mexpr> -- Derivatives!
+*Mexpr> diff a $ a^4 + 3*a^2 + 5
+4a³ + 6a
+
 ```
 
 How does it work?
@@ -54,6 +65,8 @@ foo          _          = "input is not a sum"
 ```
 
 Our quasiquoter, `m`, will build smarter destructors based off of these. Then if someone implements `SymbolicSum`, etc, they can use our patterns!
+
+(The actual pattern matching has been abstracted to colah/pattern-power which you need installed to run this.)
 
 Fun Hacking!!
 --------------

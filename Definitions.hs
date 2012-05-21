@@ -37,7 +37,8 @@ sumC' vals =
 	in if null sums
 		then if null consts
 			then sumC'' vals
-			else sumC'' $ [constC (sum consts)] ++ filter (not.isConst) vals
+			else sumC'' $ 
+				(if sum consts == 0 then [] else [constC (sum consts)]) ++ filter (not.isConst) vals
 		else sumC' $ nonsums ++ concat (map (\(sumD -> Just a) -> a) sums)
 
 
@@ -58,11 +59,21 @@ prodC' vals =
 		isConst (constD -> Just _) = True
 		isConst       _            = False
 		consts = map (\(constD -> Just a) -> a) $ filter isConst vals
+		nonconsts = filter (not.isConst) vals
 	in if null prods
 		then if null consts
 			then prodC'' vals
-			else prodC'' $ [constC (product consts)] ++ filter (not.isConst) vals
+			else case (nonconsts, product consts) of
+				([],n) -> constC n
+				(_, 0) -> constC 0
+				(l, 1) -> prodC l
+				(l, n) -> prodC $ (constC n) : l
 		else prodC' $ nonprods ++ concat (map (\(prodD -> Just a) -> a) prods)
+
+-- a can be differentiated
+class SymbolicDiff a where
+	diffC :: a -> a
+	diffD :: a -> Maybe a
 
 {-cleanLCons :: ([a] -> a) -> (a -> Maybe [a]) -> ([b] -> a) -> (a -> b) -> (b -> Maybe a) -> a -> a
 cleanLCons      cons            dest           constCons     constC        constD  (dest -> Just vals) = 
@@ -83,14 +94,6 @@ cleanLCons      cons            dest           constCons     constC        const
 			filter (not . isCons) vals ++ concat (map (\(dest -> Just a) -> a) conses)
 -}
 
-class SymbolicDiff a where
-	diff :: a -> a
-	diffV :: a -> Maybe a
-
-class SymbolicInt a where
-	int :: a -> a
-	intV :: a -> Maybe a
-
 
 
 listEq (==) (a:as) b =
@@ -104,7 +107,7 @@ listEq (==) (a:as) b =
 listEq _ [] [] = True
 listEq _ _  _  = False
 
-(===) :: (SymbolicSum a, Symbolic b a, Eq b, SymbolicProd a) => a -> a -> Bool
+(===) :: (SymbolicSum a, Symbolic b a, Eq b, SymbolicProd a, SymbolicDiff a) => a -> a -> Bool
 (constD -> Just a) === (constD -> Just b) = a == b
 (varD   -> Just a) === (varD   -> Just b) = a == b
 (sumD  -> Just as) === (sumD  -> Just bs) = listEq (===) as bs
@@ -113,6 +116,7 @@ listEq _ _  _  = False
 (prodD -> Just as) === (prodD -> Just bs) = listEq (===) as bs
 (prodD-> Just [a]) === (              b ) = a === b
 (              a ) === (prodD-> Just [b]) = a === b
+(diffD -> Just a ) === (diffD -> Just b ) = a === b
 a                  ===                b   = False
 
 --instance Eq
