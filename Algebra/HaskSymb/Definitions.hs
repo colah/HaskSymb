@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses, RankNTypes, FunctionalDependencies, ViewPatterns, NoMonomorphismRestriction #-}
 
-module Definitions where
+module Algebra.HaskSymb.Definitions where
 
 import Prelude hiding (const)
 import Data.List as List

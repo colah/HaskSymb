@@ -1,0 +1,25 @@
+Name:                HaskSymb
+Version:             0.0.1
+cabal-version:       >= 1.6
+Synopsis:            An experiment in Haskell symbolic algebra.
+Description:         A pretty symbolic algebra library for Haskell. 
+                     The m quasiquoter allows math pattern matching.
+License:             GPL
+Author:              Christopher Olah
+Maintainer:          Christopher Olah <chris@colah.ca>
+Homepage:            https://github.com/colah/ImplicitCAD
+build-type:          Simple
+Category:            Graphics
+
+Library
+    Build-Depends:       base >= 3 && < 5, template-haskell, pattern-power, parsec
+    Extensions:          ViewPatterns, TemplateHaskell, GADTs, MultiParamTypeClasses
+    Exposed-Modules:     
+        Algebra.HaskSymb
+    Other-Modules:
+        Algebra.HaskSymb.Definitions
+        Algebra.HaskSymb.BasicAlgs
+        Algebra.HaskSymb.MExpr
+        Algebra.HaskSymb.M.Parser
+        Algebra.HaskSymb.M.PrePat
+        Algebra.HaskSymb.M.QQ

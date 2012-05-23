@@ -1,15 +1,11 @@
 
 {-# LANGUAGE RankNTypes, ViewPatterns, FlexibleInstances, MultiParamTypeClasses #-}
 
-module Mexpr (MExpr(..), module BasicAlgs, module Data.Pattern, m, isConst, collectCopies) where
+module Algebra.HaskSymb.MExpr (MExpr(..)) where
 
-import Definitions
-import Data.Pattern
+import Algebra.HaskSymb.Definitions
 import Data.List as List
 import Data.Maybe as Maybe
-import BasicAlgs hiding ((+), (*))
-import M.PrePat
-import M.QQ
 
 data MExpr a =  C a | V String | Sum [MExpr a] | Prod [MExpr a]
 				| Cos (MExpr a) | Sin (MExpr a) | Tan (MExpr a)

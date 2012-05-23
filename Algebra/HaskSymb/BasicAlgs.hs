@@ -1,15 +1,17 @@
 {-# LANGUAGE MultiParamTypeClasses, ViewPatterns, TemplateHaskell, QuasiQuotes, NoMonomorphismRestriction #-}
 
-module BasicAlgs where
+module Algebra.HaskSymb.BasicAlgs (simplify, expand, collectTerms, diff) where
 
 import Prelude hiding ((+), (*))
-import M.QQ
-import Definitions
+import Algebra.HaskSymb.M.QQ
+import Algebra.HaskSymb.Definitions
 
 infixl 6 + 
 a+b = sumC' [a,b]
 infixl 7 *
 a*b = prodC' [a,b]
+
+simplify = collectTerms . expand
 
 --expand :: (SymbolicSum a, SymbolicProd a) => a -> a
 expand [m|  a+b  |] = expand a + expand b
@@ -36,7 +38,5 @@ diff a b = collectTerms $ expand $ diff' a b
 		diff' var [m| a * b|] = a* (diff' var b) + b* (diff' var a)
 		diff' var [m| aC |] = 0
 		diff' var a = 0
-
-exapndAndCollect = collectTerms . expand
 
 

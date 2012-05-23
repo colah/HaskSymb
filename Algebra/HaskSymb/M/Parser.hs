@@ -1,16 +1,13 @@
-{-# LANGUAGE MultiParamTypeClasses, ViewPatterns, TupleSections, FlexibleContexts, ScopedTypeVariables, Rank2Types, NoMonomorphismRestriction, DeriveDataTypeable #-}
+{-# LANGUAGE MultiParamTypeClasses, ViewPatterns, FlexibleContexts, ScopedTypeVariables, Rank2Types, NoMonomorphismRestriction #-}
 
-module M.Parser (parsePat) {-(mexpr, parsePat)-} where
+module Algebra.HaskSymb.M.Parser (parsePat) {-(mexpr, parsePat)-} where
 
 import Prelude hiding (const)
-import Definitions
-import Data.Data
-import M.PrePat
+import Algebra.HaskSymb.Definitions
+import Algebra.HaskSymb.M.PrePat
 import Text.Parsec
---import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Expr
 import Language.Haskell.TH
-import Unsafe.Coerce
 
 -- The obvious generalization of sepBy and sepBy1
 sepBy2 seg sep = do
@@ -46,7 +43,7 @@ parsePat (file, line, col) s =
 -- The 'n' argument is the fixity level we are at
 
 data Proxy = Proxy
-	deriving (Data, Typeable, Eq)
+	deriving Eq
 
 instance Symbolic Integer Proxy where
 	constD _ = Nothing
@@ -68,7 +65,7 @@ mexpr' = do
 	return (makePat a)
 
 
-mexpr :: (Symbolic Integer a, SymbolicSum a, SymbolicProd a, Data a, Eq a) =>
+mexpr :: (Symbolic Integer a, SymbolicSum a, SymbolicProd a, Eq a) =>
 			Int -> Parsec [Char] st (SymbPat a)
 
 mexpr n@5 = 

@@ -1,13 +1,14 @@
-{-# LANGUAGE MultiParamTypeClasses, ViewPatterns, TupleSections #-}
+{-# LANGUAGE MultiParamTypeClasses, ViewPatterns #-}
 
 
-module M.QQ(m, isConst) where
+module Algebra.HaskSymb.M.QQ(m, isConst) where
 
 -- Based on http://www.haskell.org/haskellwiki/Quasiquotation
 
-import Definitions
-import M.PrePat (isConst)
-import M.Parser
+import Data.Pattern
+import Algebra.HaskSymb.Definitions
+import Algebra.HaskSymb.M.PrePat (isConst)
+import Algebra.HaskSymb.M.Parser
 import Language.Haskell.TH as TH
 import Language.Haskell.TH.Quote
 
