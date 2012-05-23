@@ -8,7 +8,6 @@ The biggest one is that it provides mathematical pattern matching via quasiquote
 ```haskell
 expand [m|  a+b  |] = expand a + expand b
 expand [m|a*(b+c)|] = expand (a*b) + expand (a*c)
-expand [m|  a*b  |] = expand a * expand b
 expand       a      = a
 ```
 
@@ -22,24 +21,22 @@ Example Use
 A short ghci session with HaskSymb, using the `MExpr` symbolic type
 
 ```haskell
-Prelude> :l Mexpr
-...
+Prelude> import Algebra.HaskSymb
+Prelude Algebra.HaskSymb> -- Let's make some variables!
+Prelude Algebra.HaskSymb> let (a,b)  = (V "a", V "b")
 
-*Mexpr> -- Let's make some variables!
-*Mexpr> let (a,b)  = (V "a", V "b")
-
-*Mexpr> -- Basic Expression manipulation
-*Mexpr> (a+1)^3
+Prelude Algebra.HaskSymb> -- Basic Expression manipulation
+Prelude Algebra.HaskSymb> (a+1)^3
 (a + 1)³
-*Mexpr> expand $ (a+1)^3
+Prelude Algebra.HaskSymb> expand $ (a+1)^3
 a³ + a² + a² + a² + a + a + a + 1
-*Mexpr> collectTerms $ expand $ (a+1)^3
+Prelude Algebra.HaskSymb> collectTerms $ expand $ (a+1)^3
 a³ + 3a² + 3a + 1
-*Mexpr> collectTerms $ expand $ (a+b)^4
+Prelude Algebra.HaskSymb> collectTerms $ expand $ (a+b)^4
 6a²*b² + 4a³*b + 4a*b³ + b⁴ + a⁴
 
-*Mexpr> -- Derivatives!
-*Mexpr> diff a $ a^4 + 3*a^2 + 5
+Prelude Algebra.HaskSymb> -- Derivatives!
+Prelude Algebra.HaskSymb> diff a $ a^4 + 3*a^2 + 5
 4a³ + 6a
 
 ```
